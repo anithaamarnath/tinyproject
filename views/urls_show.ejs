@@ -13,8 +13,11 @@
 <body style="font-size:20px; padding:50px;">
 
   <li>shortURL - <%= shortURL %> </li>
-   <li>longURL - <%= longURL %> </li>
-
+   <!-- <li>longURL - <%= longURL %> </li> -->
+    <form method="POST" action="/urls/<%= shortURL %>">
+      <input type="text" placeholder= "<%= longURL %>"name=" longURL">
+      <button type="submit" class="btn btn-primary"> Update</button>
+      </form>
 
 
 

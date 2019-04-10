@@ -49,6 +49,16 @@ app.post("/u", (req, res) => {
                            // Log the POST request body to the console
   //res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
+
+//update the long url
+app.post("/urls/:shortURL" , (req,res)=> {
+  //console.log(req.params);
+ urlDatabase[req.params.shortURL] = req.body.longURL;
+ //console.log(req.body)
+ res.redirect(`/urls/${req.params.shortURL}`);
+
+
+})
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
 
