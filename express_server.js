@@ -40,21 +40,34 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.post("/urls", (req, res) => {
+app.post("/u", (req, res) => {
   console.log(req.body);
   const shortURL = generateRandomString(6);
   const longURL = req.body.longURL;
-  res.redirect("/urls" + shortURL)
+  res.redirect("/u" + shortURL)
 
                            // Log the POST request body to the console
   //res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = //urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL];
 
+    if(longURL){
+  res.redirect(longURL);
+ }   else {
+  res.status(400).send("the shortURL dosent exist");
+  }
   res.redirect(longURL);
 
   res.status(301).redirect(longURL);
+});
+
+
+
+app.post("/urls/:shortURL/delete", (req,res)=> {
+  delete urlDatabase[req.params.shortURL];
+  res.redirect("/urls");
+
 });
 
 

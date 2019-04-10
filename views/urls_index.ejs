@@ -11,9 +11,15 @@
   <title>TinyApp</title>
 </head>
 <body style="font-size:20px; padding:50px;">
+
     <!-- Add EJS code here -->
     <% for(let keys in urls){ %>
-    <li><%= keys %> - <%= urls[keys] %></li>
+
+      <form method="POST" action="/urls/<%= keys %>/delete">
+         <li><%= keys %> - <%= urls[keys] %>
+         <button type="delete" class="btn btn-primary"> delete</button>
+      </form>
+    </li>
     <% }; %>
 </body>
 </html>
