@@ -52,9 +52,9 @@ app.post("/u", (req, res) => {
 
 //update the long url
 app.post("/urls/:shortURL" , (req,res)=> {
-  //console.log(req.params);
+
  urlDatabase[req.params.shortURL] = req.body.longURL;
- //console.log(req.body)
+
  res.redirect(`/urls/${req.params.shortURL}`);
 
 

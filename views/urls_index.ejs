@@ -17,7 +17,10 @@
 
       <form method="POST" action="/urls/<%= keys %>/delete">
          <li><%= keys %> - <%= urls[keys] %>
-         <button type="delete" class="btn btn-primary"> delete</button>
+          <a href="/urls/<%= keys %>">Edit</a>
+          <button type="Edit" class="btn btn-primary"> Edit</button>
+
+
       </form>
     </li>
     <% }; %>
