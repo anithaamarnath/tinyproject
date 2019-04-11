@@ -1,15 +1,23 @@
 var express = require("express");
 var app = express();
 var PORT = 8080; // default port 8080
+var cookieParser = require('cookie-parser') //set cookie
 
 app.set("view engine", "ejs")
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
+app.use(cookieParser())
+
+
+
+
 var urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+//res.render("urls_index", templateVars);
 function generateRandomString(random) {
 
 var text = "";
@@ -26,8 +34,21 @@ app.get("/hello", (req, res) => {
   let templateVars = { greeting: 'Hello World!' };
   res.render("hello_world", templateVars);
 });
+
+//cookies
+app.post("/login", (req,res)=>{
+
+ res.cookie("username", req.body.username); // set cookie to the user name
+
+
+res.redirect("urls");
+});
+
+
+  //console.log(cookieParser());
+
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  let templateVars = { urls: urlDatabase, username: req.cookies["username"]};
   res.render("urls_index", templateVars);
 });
 app.get("/urls/new", (req, res) => {
@@ -35,7 +56,9 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  let templateVars = { shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL] ,
+    username: req.cookies["username"]};
   //console.log(res.params.shortURL);
   res.render("urls_show", templateVars);
 });
