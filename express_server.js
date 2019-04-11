@@ -16,7 +16,25 @@ var cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
 
-var urlDatabase = {
+
+
+// Data to store the user name and email
+
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+}
+
+
+const urlDatabase = {
  "b2xVn2": "http://www.lighthouselabs.ca",
  "9sm5xK": "http://www.google.com"
 };
@@ -24,12 +42,29 @@ var urlDatabase = {
 function generateRandomString() {
 var ramdom = 6; //length of the string
 var text = "";
-var possible = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+var possible = "123e4567-e89b-12d3-a456-426655440000";
 for (var i = 0; i < 6; i++) {
 text += possible.charAt(Math.floor(Math.random() * 7));
 }
 return text;
 }
+//--------------------------------------------------------
+var emailexist = function(email) {
+  for (var keys in users) {
+
+    if (users[keys].email === email ){
+      return users[keys].id;
+    }
+  }
+
+      return false;
+
+  }
+
+
+
+
+
 //---------------------------------------------------------
 
 app.get("/", (req, res) => {
@@ -49,19 +84,19 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
- let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+ let templateVars = { urls: urlDatabase, user:users[req.cookies.user_id] };
  res.render("urls_index", templateVars);
 });
 
 //Display page
 app.get("/urls/new", (req, res) => {
- let templateVars = { username: req.cookies["username"] };
+ let templateVars = { user:  users[req.cookies.user_id] };
  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]
-                     ,username: req.cookies["username"]};
+                     ,user:users[req.cookies.user_id]};
  res.render("urls_show", templateVars);
 });
 
@@ -88,7 +123,7 @@ app.get("/u/:shortURL", (req, res) => {
  if(longURL){
    res.redirect(longURL);
  }
- else{
+ else {
   res.status(400).send("the shortURL dosent exist");
  }
 
@@ -113,16 +148,91 @@ app.post("/urls/:shortURL", (req,res) => {
 
 });
 
-app.post("/login",  (req, res) =>{
- //sets a cookie object{username: "username"}
- res.cookie("username",req.body.username);
- res.redirect("/urls");
-});
+
 app.post("/logout",  (req, res) =>{
  //sets a cookie object{username: "username"}
- res.clearCookie("username",req.body.username);
+ res.clearCookie("user_id");
  res.redirect("/urls");
 });
+
+// create a get form to register
+app.get("/register", (req,res)=>{
+  let templateVars = { urls: urlDatabase, user:users[req.cookies.user_id] };
+
+
+  res.render("register" ,templateVars);
+  //console.log("register");
+
+
+
+});
+
+//create a post form to register
+app.post("/register", (req,res)=>{
+  if(!req.body.email || !req.body.password){
+   res.status(403).send("Invalid email or password");
+   return;
+ }
+ if(emailexist (req.body.email)){
+ res.status(403).send("Email already registered");
+return;
+ }
+
+  const userid =generateRandomString();
+  const user = { 'id' :  userid, 'email' : req.body.email, 'password':req.body.password}
+
+  users[userid] = user;
+  res.cookie("userid",userid);
+  res.redirect("/urls");
+  //console.log(users[userid]);
+
+
+
+});
+
+//---------------------------
+
+
+app.get("/login", (req, res) =>{
+  let templateVars = { urls: urlDatabase, user:users[req.cookies.user_id] };
+ res.render("login" , templateVars);
+});
+
+//--------------------------------------------------
+
+app.post("/login",  (req, res) =>{
+ const userId = emailexist(req.body.email);
+
+ if(userId){
+   if (userId === req.cookies.user_id){
+     res.send("You are already loged in");
+     return;
+   }
+
+   if(users[userId].password === req.body.password){
+     res.cookie("user_id",userId);
+     res.redirect("/urls");
+   }
+   else {
+     // the password is not correct
+     res.status(400).send("Incorrect Password");
+   }
+ }
+ else {
+   res.status(400).send("User not registered");
+ }
+});
+
+
+
+
+
+
+
+
+
+
+
 
 
 

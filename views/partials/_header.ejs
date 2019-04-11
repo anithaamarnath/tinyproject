@@ -1,20 +1,12 @@
 
 <h1> TinyApp</h1>
 
-<% if(!username) { %>
-
-<!-- <h2> Login in as : <%= username %> </h2> -->
-
- <form method="POST" action="/login">
-  <h2> Create a TinyApp</h2>
-    username:
-
-      <input type="text" placeholder= "username"name="username">
-      <button type="submit" class="btn btn-primary"> Login</button>
-      </form>
+<% if(!user) { %>
+ <a href="/register"> Register </a>
+ <a href = "/login"> Login </a>
 
     <% } else{ %>
-    <h2> Login in as : <%= username %> </h2>
+    <h2> Login in as : <%= user.email %> </h2>
   <form method="POST" action="/logout">
 
 <button type="submit" class="btn btn-primary"> Logout</button>
@@ -25,4 +17,3 @@
  <% } %>
 
 
-<h2> My URLs </h2>
