@@ -1,15 +1,28 @@
 
 <h1> TinyApp</h1>
-<h2> Login in as : <%=username %> </h2>
 
+<% if(!username) { %>
+
+<!-- <h2> Login in as : <%= username %> </h2> -->
 
  <form method="POST" action="/login">
-  Username:
-  <br>
+  <h2> Create a TinyApp</h2>
+    username:
+
       <input type="text" placeholder= "username"name="username">
       <button type="submit" class="btn btn-primary"> Login</button>
       </form>
 
+    <% } else{ %>
+    <h2> Login in as : <%= username %> </h2>
+  <form method="POST" action="/logout">
+
+<button type="submit" class="btn btn-primary"> Logout</button>
+      </form>
+
+
+
+ <% } %>
 
 
 <h2> My URLs </h2>
