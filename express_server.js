@@ -6,34 +6,19 @@ const bcrypt = require('bcrypt');
 var cookieParser = require('cookie-parser');
 var cookieSession = require('cookie-session');
 
-
-
-
-
-
-// set the view engine to ejs
 app.set("view engine", "ejs");
 
-//set the body handler
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
-//set the cookie handler
 
 app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
   keys: ['hi this is secret'],
 
-  //maxAge: 24 * 60 * 60 * 1000
-}))
+}));
 
-// set cookies value
-//var req.session.user_id = "null";
-
-
-
-// Data to store the user name and email
 
 const users = {
   "userRandomID": {
@@ -76,7 +61,6 @@ var emailexist = function(email) {
       return false;
 
   }
-
 
 
  //-----------------------------------------------------
@@ -122,11 +106,9 @@ app.get("/urls", (req, res) => {
 });
 
 
-//Display page----------------
+//-------------Display page----------------
 app.get("/urls/new", (req, res) => {
-
- if(!req.session.user_id){
-  //n\console.log(req.cookies.user_id);
+  if(!req.session.user_id){
   res.redirect("/login",);
   return;
  }
@@ -192,7 +174,8 @@ app.post("/urls/:shortURL", (req,res) => {
 
 
 app.post("/logout",  (req, res) =>{
-  req.session = null;
+
+  req.session.user_id = null;
  //sets a cookie object{username: "username"}
  //req.clearCookie("user_id");
  res.redirect("/urls");
@@ -238,10 +221,6 @@ return;
   //eq.session("user_id",userid);
   res.redirect("/urls");
   //console.log(users[userid]);
-
-
-
-
 });
 
 //---------------------------
@@ -256,8 +235,6 @@ app.get("/login", (req, res) =>{
 
 app.post("/login",  (req, res) =>{
   let userFound;
-
-
  const userId = emailexist(req.body.email);
 
  if(userId){
@@ -269,8 +246,8 @@ app.post("/login",  (req, res) =>{
    if (bcrypt.compareSync(req.body.password, users[userId].password) ) {
 
     //users[newID] = newUser;
-
-     res.session("user_id",userId);
+    req.session.user_id = userId;
+     //res.session("user_id",userId);
      res.redirect("/urls");
    }
    else {
