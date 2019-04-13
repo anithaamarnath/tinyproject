@@ -106,7 +106,7 @@ app.get("/urls", (req, res) => {
 });
 
 
-//-------------Display page----------------
+
 app.get("/urls/new", (req, res) => {
   if(!req.session.user_id){
   res.redirect("/login",);
@@ -117,32 +117,27 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
- let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL],
-                     user:users[req.session.user_id]};
+ let templateVars = {
+                      shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL,
+                      user:users[req.session.user_id]
+                    };
+  console.log("test ",templateVars);
  res.render("urls_show", templateVars);
 });
 
-
-// Adds new shortURL:longURL pair given longURL
 app.post("/urls", (req, res) => {
- //console.log(req.body);  // Log the POST request body to the console
  const shortURL = generateRandomString();
  const longURL = req.body.longURL;
 
 
-urlDatabase[shortURL] = {"longURL":longURL, "userID": req.session.user_id };//Add new pair of key:value to urlDatabase
- //console.log(urlDatabase[shortURL]);
+urlDatabase[shortURL] = {"longURL":longURL, "userID": req.session.user_id };
+
  res.redirect("/urls");
 });
 
-//redirects to longURL given a ShortURL
 app.get("/u/:shortURL", (req, res) => {
 
- //console.log(req.params)dt
-
  shortURL = req.params.shortURL;
- //console.log(shortURL);
-
  const longURL =  urlDatabase[shortURL].longURL;
  if(longURL){
    res.redirect(longURL);
@@ -153,47 +148,29 @@ app.get("/u/:shortURL", (req, res) => {
 
 });
 
-// deletes a a per key: property from urlDatabase given the shortURL
-
 app.post("/urls/:shortURL/delete", (req, res) =>{
- //console.log("got into delete route");
- //console.log(req.params.shortURL);
- delete urlDatabase[req.params.shortURL];
+  delete urlDatabase[req.params.shortURL];
  res.redirect("/urls");
 });
 
-//Update the longURL in the urlDatabase given the shortURL and the new longURL
 app.post("/urls/:shortURL", (req,res) => {
- //console.log(req.params);
- //console.log(req.body);
- urlDatabase[req.params.shortURL].longURL= req.body.shortURL;
- //console.log(urlDatabase);
- res.redirect(`/urls/${req.params.shortURL}`);
 
+ urlDatabase[req.params.shortURL].longURL= req.body.longURL;
+ res.redirect(`/urls/${req.params.shortURL}`);
 });
 
 
 app.post("/logout",  (req, res) =>{
 
   req.session.user_id = null;
- //sets a cookie object{username: "username"}
- //req.clearCookie("user_id");
- res.redirect("/urls");
+  res.redirect("/urls");
 });
 
-// create a get form to register
 app.get("/register", (req,res)=>{
-  let templateVars = { urls: urlDatabase, user:users[req.session.user_id] };//dont changw req
-
-
+  let templateVars = { urls: urlDatabase, user:users[req.session.user_id] };
   res.render("register" ,templateVars);
-  //console.log("register");
-
-
-
 });
 
-//create a post form to register
 app.post("/register", (req,res)=>{
 
   if(!req.body.email || !req.body.password){
@@ -210,28 +187,23 @@ return;
   const newId =generateRandomString();
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
-  //console.log(hashedPassword);
+
 
   const newUser = { 'id' :  newId,
                   'email' : req.body.email,
                   'password': hashedPassword }
+  req.session.user_id = newId;
 
-  users[newId] = newUser;
-  req.session.user_id = newId; //dont change req
-  //eq.session("user_id",userid);
-  res.redirect("/urls");
-  //console.log(users[userid]);
+   users[newId] = newUser;
+   res.redirect("/urls");
 });
-
-//---------------------------
-
 
 app.get("/login", (req, res) =>{
   let templateVars = { urls: urlDatabase, user:users[req.session.user_id]};
  res.render("login" , templateVars);
 });
 
-//--------------------------------------------------
+
 
 app.post("/login",  (req, res) =>{
   let userFound;
@@ -244,14 +216,11 @@ app.post("/login",  (req, res) =>{
    }
 
    if (bcrypt.compareSync(req.body.password, users[userId].password) ) {
-
-    //users[newID] = newUser;
     req.session.user_id = userId;
-     //res.session("user_id",userId);
-     res.redirect("/urls");
+    res.redirect("/urls");
    }
    else {
-     // the password is not correct
+
      res.status(400).send("Incorrect Password");
    }
  }
