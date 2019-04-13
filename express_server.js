@@ -2,6 +2,9 @@
 var express = require("express");
 var app = express();
 var PORT = 8080; // default port 8080
+const bcrypt = require('bcrypt');
+
+
 
 
 
@@ -101,10 +104,7 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   const urlsUser = urlsForUser(req.cookies.user_id);
   if(!urlsUser){
-   //user hasnt create any url yet
-   //res.send("<html><body><a href='/urls/new'>Create a new short URL</a> </body></html>\n");
-   console.log("hi");
-   //return;
+
  }
  let templateVars = { urls: urlsUser, user: users[req.cookies.user_id] };
  res.render("urls_index", templateVars);
@@ -135,6 +135,7 @@ app.post("/urls", (req, res) => {
  //console.log(req.body);  // Log the POST request body to the console
  const shortURL = generateRandomString();
  const longURL = req.body.longURL;
+
 
 urlDatabase[shortURL] = {"longURL":longURL, "userID": req.cookies.user_id };//Add new pair of key:value to urlDatabase
  //console.log(urlDatabase[shortURL]);
@@ -199,17 +200,22 @@ app.get("/register", (req,res)=>{
 
 //create a post form to register
 app.post("/register", (req,res)=>{
+
   if(!req.body.email || !req.body.password){
    res.status(403).send("Invalid email or password");
    return;
  }
+
+
  if(emailexist (req.body.email)){
  res.status(403).send("Email already registered");
 return;
  }
+ let hashedPassword = bcrypt.hashSync(req.body.password, 10);
+
 
   const userid =generateRandomString();
-  const user = { 'id' :  userid, 'email' : req.body.email, 'password':req.body.password}
+  const user = { 'id' :  userid, 'email' : req.body.email, 'password':hashedPassword}
 
   users[userid] = user;
   res.cookie("user_id",userid);
@@ -224,13 +230,15 @@ return;
 
 
 app.get("/login", (req, res) =>{
-  let templateVars = { urls: urlDatabase, user:users[req.cookies.user_id] };
+  let templateVars = { urls: urlDatabase, user:users[req.cookies.user_id]};
  res.render("login" , templateVars);
 });
 
 //--------------------------------------------------
 
 app.post("/login",  (req, res) =>{
+  let userFound;
+
 
  const userId = emailexist(req.body.email);
 
@@ -240,7 +248,9 @@ app.post("/login",  (req, res) =>{
      return;
    }
 
-   if(users[userId].password === req.body.password){
+   if (bcrypt.compareSync(req.body.password, users[userId].password) ) {
+
+
      res.cookie("user_id",userId);
      res.redirect("/urls");
    }
@@ -252,9 +262,6 @@ app.post("/login",  (req, res) =>{
  else {
    res.status(400).send("User not registered");
  }
-
-
-
 });
 
 
