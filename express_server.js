@@ -3,7 +3,7 @@ var express = require("express");
 var app = express();
 var PORT = 8080; // default port 8080
 const bcrypt = require('bcrypt');
-var cookieParser = require('cookie-parser');
+//var cookieParser = require('cookie-parser');
 var cookieSession = require('cookie-session');
 
 app.set("view engine", "ejs");
@@ -158,7 +158,11 @@ urlDatabase[shortURL] = {"longURL":longURL, "userID": req.session.user_id };
 
 app.get("/u/:shortURL", (req, res) => {
 
- shortURL = req.params.shortURL;
+ short = req.params.shortURL;
+  if(!urlDatabase[short] ){
+   res.status(400).send("this shortURL does not exist");
+   return;
+ }
  const longURL =  urlDatabase[shortURL].longURL;
  if(longURL){
    res.redirect(longURL);
@@ -170,7 +174,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) =>{
-  delete urlDatabase[req.params.shortURL];
+  delete urlDatabase[short];
  res.redirect("/urls");
 });
 
