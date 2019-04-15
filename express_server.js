@@ -15,7 +15,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
-  keys: ['hi this is secret'],
+  keys: ['hi-this-is-secret'],
+  maxAge:24*60*1000
 
 }));
 
@@ -97,8 +98,15 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+if(!req.session.user_id) {
+  res.send("<html><body>You are not logged in <a href='/login'>Login</a> </body></html>\n");
+   return;
+
+}
+
   const urlsUser = urlsForUser(req.session.user_id);
   if(!urlsUser){
+    res.send("<html><body><a href='/urls_new'>Create a new short URL</a> </body></html>\n");
 
  }
  let templateVars = { urls: urlsUser, user: users[req.session.user_id] };
@@ -117,12 +125,25 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  if(!req.session.user_id){
+   res.send("<html><body>You are not logged in <a href='/login'>Login</a> </body></html>\n");
+   return;
+ }
+ const short = req.params.shortURL;
+ if(!urlDatabase[short] ){
+   res.status(400).send("this shortURL does not exist");
+   return;
+ }
+
+ if(urlDatabase[short].userID === req.session.user_id){
  let templateVars = {
                       shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL,
                       user:users[req.session.user_id]
                     };
   console.log("test ",templateVars);
  res.render("urls_show", templateVars);
+} else
+res.status(403).send("you have no access to modify this url");
 });
 
 app.post("/urls", (req, res) => {
@@ -132,7 +153,7 @@ app.post("/urls", (req, res) => {
 
 urlDatabase[shortURL] = {"longURL":longURL, "userID": req.session.user_id };
 
- res.redirect("/urls");
+ res.redirect(/urls/${shortURL});
 });
 
 app.get("/u/:shortURL", (req, res) => {
