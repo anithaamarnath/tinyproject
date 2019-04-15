@@ -12,7 +12,7 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
 
-app.use(cookieParser());
+//app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
   keys: ['hi-this-is-secret'],
@@ -51,7 +51,7 @@ text += possible.charAt(Math.floor(Math.random() * 7));
 return text;
 }
 //--------------------------------------------------------
-var emailexist = function(email) {
+var emailExist = function(email) {
   for (var keys in users) {
 
     if (users[keys].email === email ){
@@ -107,7 +107,7 @@ if(!req.session.user_id) {
   const urlsUser = urlsForUser(req.session.user_id);
   if(!urlsUser){
     res.send("<html><body><a href='/urls_new'>Create a new short URL</a> </body></html>\n");
-
+    return;
  }
  let templateVars = { urls: urlsUser, user: users[req.session.user_id] };
  res.render("urls_index", templateVars);
@@ -140,7 +140,8 @@ app.get("/urls/:shortURL", (req, res) => {
                       shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL,
                       user:users[req.session.user_id]
                     };
-  console.log("test ",templateVars);
+
+
  res.render("urls_show", templateVars);
 } else
 res.status(403).send("you have no access to modify this url");
@@ -153,41 +154,52 @@ app.post("/urls", (req, res) => {
 
 urlDatabase[shortURL] = {"longURL":longURL, "userID": req.session.user_id };
 
- res.redirect(/urls/${shortURL});
+ res.redirect("/urls");
 });
 
 app.get("/u/:shortURL", (req, res) => {
 
- short = req.params.shortURL;
+  const short = req.params.shortURL;
   if(!urlDatabase[short] ){
    res.status(400).send("this shortURL does not exist");
    return;
  }
- const longURL =  urlDatabase[shortURL].longURL;
+ const longURL =  urlDatabase[short].longURL;
  if(longURL){
    res.redirect(longURL);
  }
  else {
-  res.status(400).send("the shortURL dosent exist");
+  res.status(400).send("the URL dosent exist");
  }
 
 });
 
 app.post("/urls/:shortURL/delete", (req, res) =>{
+  const short = req.params.shortURL;
+ if(req.session.user_id === urlDatabase[short].userID){
   delete urlDatabase[short];
  res.redirect("/urls");
+} else {
+   res.status(403).send("You have no access to delete this url");
+}
 });
 
 app.post("/urls/:shortURL", (req,res) => {
+   const short = req.params.shortURL;
+  if(req.session.user_id === urlDatabase[short].userID){
 
- urlDatabase[req.params.shortURL].longURL= req.body.longURL;
- res.redirect(`/urls/${req.params.shortURL}`);
+ urlDatabase[short].longURL= req.body.longURL;
+ res.redirect(`/urls/`);
+  return
+   }else{
+     res.status(403).send("You have no access to delete this url");
+     }
 });
 
 
 app.post("/logout",  (req, res) =>{
 
-  req.session.user_id = null;
+  req.session = null;
   res.redirect("/urls");
 });
 
@@ -204,7 +216,7 @@ app.post("/register", (req,res)=>{
  }
 
 
- if(emailexist (req.body.email)){
+ if(emailExist (req.body.email)){
  res.status(403).send("Email already registered");
 return;
  }
@@ -217,9 +229,10 @@ return;
   const newUser = { 'id' :  newId,
                   'email' : req.body.email,
                   'password': hashedPassword }
-  req.session.user_id = newId;
+
 
    users[newId] = newUser;
+   req.session.user_id = newId;
    res.redirect("/urls");
 });
 
@@ -232,7 +245,7 @@ app.get("/login", (req, res) =>{
 
 app.post("/login",  (req, res) =>{
   let userFound;
- const userId = emailexist(req.body.email);
+ const userId = emailExist(req.body.email);
 
  if(userId){
    if (userId === req.session.user_id){
