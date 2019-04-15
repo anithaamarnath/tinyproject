@@ -3,7 +3,7 @@ var express = require("express");
 var app = express();
 var PORT = 8080; // default port 8080
 const bcrypt = require('bcrypt');
-//var cookieParser = require('cookie-parser');
+
 var cookieSession = require('cookie-session');
 
 app.set("view engine", "ejs");
@@ -12,7 +12,7 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
 
-//app.use(cookieParser());
+
 app.use(cookieSession({
   name: 'session',
   keys: ['hi-this-is-secret'],
@@ -189,7 +189,7 @@ app.post("/urls/:shortURL", (req,res) => {
   if(req.session.user_id === urlDatabase[short].userID){
 
  urlDatabase[short].longURL= req.body.longURL;
- res.redirect(`/urls/`);
+ res.redirect("/urls/"+ short);
   return
    }else{
      res.status(403).send("You have no access to delete this url");
