@@ -11,15 +11,12 @@ app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
-
-
 app.use(cookieSession({
   name: 'session',
   keys: ['hi-this-is-secret'],
   maxAge:24*60*1000
 
 }));
-
 
 const users = {
   "userRandomID": {
@@ -40,7 +37,7 @@ const urlDatabase = {
   "b6UTxQ": { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
   "i3BoGr": { longURL: "https://www.google.ca", userID: "aJ48lW" }
 };
-//------------------------------------------
+
 function generateRandomString() {
 var ramdom = 6; //length of the string
 var text = "";
@@ -50,7 +47,7 @@ text += possible.charAt(Math.floor(Math.random() * 7));
 }
 return text;
 }
-//--------------------------------------------------------
+
 var emailExist = function(email) {
   for (var keys in users) {
 
@@ -58,13 +55,9 @@ var emailExist = function(email) {
       return users[keys].id;
     }
   }
-
-      return false;
-
+  return false;
   }
 
-
- //-----------------------------------------------------
  var urlsForUser = function (userID) {
  if(!userID){
   return false;
@@ -77,25 +70,6 @@ var emailExist = function(email) {
  }
  return urlsForUser;
 }
-
-
-//---------------------------------------------------------
-
-app.get("/", (req, res) => {
- res.send("Hello!");
-});
-
-app.listen(PORT, () => {
- console.log(`Example app listening on port ${PORT}!`);
-});
-
-app.get("/urls.json", (req, res) => {
- res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
- res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
 
 app.get("/urls", (req, res) => {
 if(!req.session.user_id) {
@@ -137,9 +111,10 @@ app.get("/urls/:shortURL", (req, res) => {
 
  if(urlDatabase[short].userID === req.session.user_id){
  let templateVars = {
-                      shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL,
+                      shortURL: short, longURL: urlDatabase[short].longURL,
                       user:users[req.session.user_id]
                     };
+
 
 
  res.render("urls_show", templateVars);
@@ -185,12 +160,12 @@ app.post("/urls/:shortURL/delete", (req, res) =>{
 });
 
 app.post("/urls/:shortURL", (req,res) => {
-   const short = req.params.shortURL;
+  const short = req.params.shortURL;
   if(req.session.user_id === urlDatabase[short].userID){
 
- urlDatabase[short].longURL= req.body.longURL;
- res.redirect("/urls/"+ short);
-  return
+     urlDatabase[short].longURL= req.body.longURL;
+     res.redirect("/urls/");
+      return;
    }else{
      res.status(403).send("You have no access to delete this url");
      }
@@ -265,6 +240,9 @@ app.post("/login",  (req, res) =>{
  else {
    res.status(400).send("User not registered");
  }
+});
+app.listen(PORT, () => {
+ console.log(`Example app listening on port ${PORT}!`);
 });
 
 
